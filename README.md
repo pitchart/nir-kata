@@ -1,4 +1,12 @@
-# NIR kata
+# Bulletproof your code with "Mutation-Based Property-Driven Development"
+This repository is a fork to be used during `Software Craft Luxembourg Meetup'.
+
+![NIR kata @SCL](img/bulletproof-your-code.png)
+
+### Disclaimer
+Original concept has been presented by [Arnaud Bailly](https://www.linkedin.com/in/arnaudbailly/) and documented [here](https://abailly.github.io/about.html).
+
+## The kata
 > Write a system that can handle `NIR` (simplified rules explained below)
 
 ## 1) Validate a NIR
