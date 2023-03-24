@@ -114,32 +114,25 @@ class ValidateNIR {
 Know more about `Primitive Obsession` [here](https://xtrem-tdd.netlify.app/Flavours/no-primitive-types)
 
 ## 2) Fight Primitive Obsession
-- You must apply ["Parse Don't Validate"](https://xtrem-tdd.netlify.app/Flavours/parse-dont-validate) principle to fight ["Primitive Obsession"](https://xtrem-tdd.netlify.app/Flavours/no-primitive-types)
-- Your `parsing function` must respect the below property
+Let's apply ["Parse Don't Validate"](https://xtrem-tdd.netlify.app/Flavours/parse-dont-validate) principle to fight ["Primitive Obsession"](https://xtrem-tdd.netlify.app/Flavours/no-primitive-types).
+We will use [`Property Based Testing`](https://xtrem-tdd.netlify.app/Flavours/pbt) in this part of the kata to design our parser.
+
+Our `parsing function` must respect the below property
 ```text
 for all (validNir)
 parseNIR(nir.toString) == nir
 ```
 
-in other words with `scalacheck`:
+With `parse don't validate` we want to make it impossible to represent an invalid `NIR` in our system. Our data structures need to be `immutables`.
 
-```scala
-property("roundtrip") = forAll(validNIR) { nir =>
-    parseNIR(nir.toString).value == nir
-  }
-```
+Our parser may look like this: `String -> Either<ParsingError, NIR>`
 
-With `parse don't validate` we want to make it impossible to represent an invalid `NIR` in our system.
-Use "Property-Based Testing" with `scalacheck` to drive your implementation.
-
-Your parser may look like this: `String -> Either<ParsingError, NIR>`
-
-## How to
+### How to
 - Start with a `parser` that always returns `Right[NIR]`
   - Write a minimalist data structure first (empty one)
 - Write a `positive property` test checking valid NIR can be round-tripped
   - Round-tripping: `NIR -> String -> NIR`
-    - Assert that round-tripped `NIR` equals original `NIR` 
+    - Assert that round-tripped `NIR` equals original `NIR`
   - To do so, you will have to create your own valid NIR generator
 - Write a `negative property` test checking `invalid NIRs` can not be parsed
   - This is where mutations are introduced
@@ -148,6 +141,298 @@ Your parser may look like this: `String -> Either<ParsingError, NIR>`
 - Use the properties to guide your implementation
 
 Inspired by [Arnaud Bailly](https://abailly.github.io/about.html)
+
+### Create the `Roundtrip` property
+- Add `vavr-test` to do so
+
+```kotlin
+testImplementation("io.vavr:vavr-test:0.10.4")
+```
+
+:red_circle: Specify the property
+
+```java
+class NIRProperties {
+    private Arbitrary<NIR> validNIR = null;
+
+    @Test
+    void roundTrip() {
+        Property.def("parseNIR(nir.ToString()) == nir")
+                .forAll(validNIR)
+                .suchThat(nir -> NIR.parse(nir.toString()).contains(nir))
+                .check()
+                .assertIsSatisfied();
+    }
+}
+```
+
+:green_circle: Make it pass.
+- Generate the `NIR` class
+- Handle error with a data structure: `ParsingError`
+
+```java
+public record ParseError(String message) {
+}
+
+@EqualsAndHashCode
+public class NIR {
+    public static Either<ParsingError, NIR> parse(String input) {
+        return right(new NIR());
+    }
+
+    @Override
+    public String toString() {
+        return "";
+    }
+}
+
+class NIRProperties {
+    private Arbitrary<NIR> validNIR = Arbitrary.of(new NIR());
+
+    @Test
+    void roundTrip() {
+        Property.def("parseNIR(nir.ToString()) == nir") // describe the property
+                .forAll(validNIR) // pass an Arbitrary / Generator to generate valid NIRs
+                .suchThat(nir -> NIR.parse(nir.toString()).contains(nir)) // describe the Property predicate
+                .check()
+                .assertIsSatisfied();
+    }
+}
+```
+
+### Type-Driven Development
+We will represent the `NIR` with proper immutable types like `Sex`, `Department`... carrying their own parsing logic and rules. 
+
+:large_blue_circle: Create the `Sex` type
+- We choose to use an `enum` for that
+- It is immutable by design
+- We need to work on the `String` representation of it
+- Each data structure will contain its own parsing method
+
+```java
+public enum Sex {
+    M(1), F(2);
+
+    private final int value;
+
+    Sex(int value) {
+        this.value = value;
+    }
+
+    public static Either<ParsingError, Sex> parseSex(char input) {
+        // vavr Pattern matching
+        return Match(input).of(
+                Case($('1'), right(M)),
+                Case($('2'), right(F)),
+                Case($(), left((new ParsingError("Not a valid sex"))))
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "" + value;
+    }
+}
+```
+
+- Create a generator to be able to generate valid NIRs
+
+```java
+private final Gen<Sex> sexGenerator = Gen.choose(Sex.values());
+```
+
+- Extend `NIR` with the new created type
+
+```java
+@EqualsAndHashCode
+public class NIR {
+    private final Sex sex;
+
+    public NIR(Sex sex) {
+        this.sex = sex;
+    }
+
+    public static Either<ParsingError, NIR> parseNIR(String input) {
+        return parseSex(input.charAt(0))
+                .map(NIR::new);
+    }
+
+    @Override
+    public String toString() {
+        return sex.toString();
+    }
+}
+
+class NIRProperties {
+    private final Gen<Sex> sexGenerator = Gen.choose(Sex.values());
+    private final Arbitrary<NIR> validNIR =
+            sexGenerator.map(NIR::new)
+                    .arbitrary();
+
+    @Test
+    void roundTrip() {
+        Property.def("parseNIR(nir.ToString()) == nir")
+                .forAll(validNIR)
+                .suchThat(nir -> NIR.parseNIR(nir.toString()).contains(nir))
+                .check()
+                .assertIsSatisfied();
+    }
+}
+```
+
+### Design the Year type
+Like for the `Sex` type, we design the new type with its generator.
+
+:red_circle: create a generator
+
+```java
+private final Gen<Year> yearGenerator = Gen.choose(0, 99).map(Year::fromInt); // have a private constructor
+private final Gen<Sex> sexGenerator = Gen.choose(Sex.values());
+private final Arbitrary<NIR> validNIR =
+        sexGenerator
+                .map(NIR::new)
+                // use the yearGenerator here
+                .arbitrary();
+```
+
+:green_circle: To be able to use the `yearGenerator`, we need to have a context to be able to map into it.
+It is a mutable data structure that we enrich with the result of each generator. We create a `Builder` class for it:
+
+```java
+@With
+@Getter
+@AllArgsConstructor
+public class NIRBuilder {
+    private final Sex sex;
+    private Year year;
+
+    public NIRBuilder(Sex sex) {
+        this.sex = sex;
+    }
+}
+```
+
+- We now adapt the `NIRProperties` to use this `Builder`
+```java
+class NIRProperties {
+    private final Random random = new Random();
+    private final Gen<Year> yearGenerator = Gen.choose(0, 99).map(Year::fromInt);
+    private final Gen<Sex> sexGenerator = Gen.choose(Sex.values());
+
+    private Arbitrary<NIR> validNIR =
+            sexGenerator
+                    .map(NIRBuilder::new)
+                    .map(builder -> builder.withYear(yearGenerator.apply(random)))
+                    .map(x -> new NIR(x.getSex(), x.getYear()))
+                    .arbitrary();
+
+    @Test
+    void roundTrip() {
+        Property.def("parseNIR(nir.ToString()) == nir")
+                .forAll(validNIR)
+                .suchThat(nir -> NIR.parseNIR(nir.toString()).contains(nir))
+                .check()
+                .assertIsSatisfied();
+    }
+}
+```
+
+- We now have to adapt the `NIR` class to handle the `Year` in its construct
+  - We will use the same `Builder` construct (in other languages we may use `for comprehension` or `LinQ` for example)
+
+```java
+@EqualsAndHashCode
+@AllArgsConstructor
+public class NIR {
+    private final Sex sex;
+    private final Year year;
+
+    public static Either<ParsingError, NIR> parseNIR(String input) {
+        return parseSex(input.charAt(0))
+                .map(NIRBuilder::new)
+                .flatMap(builder -> right(builder.withYear(new Year(1))))
+                .map(builder -> new NIR(builder.getSex(), builder.getYear()));
+    }
+
+    @Override
+    public String toString() {
+        return sex.toString() + year;
+    }
+}
+```
+
+:large_blue_circle: We can now work on the `Year` type and its `parser`
+
+```java
+@EqualsAndHashCode
+@AllArgsConstructor
+public class NIR {
+    private final Sex sex;
+    private final Year year;
+
+    public static Either<ParsingError, NIR> parseNIR(String input) {
+        return parseSex(input.charAt(0))
+                .map(NIRBuilder::new)
+                .flatMap(builder -> parseYear(input.substring(1, 3), builder))
+                .map(builder -> new NIR(builder.getSex(), builder.getYear()));
+    }
+
+    private static Either<ParsingError, NIRBuilder> parseYear(String input, NIRBuilder builder) {
+        return Year.parseYear(input)
+                .map(builder::withYear);
+    }
+
+    @Override
+    public String toString() {
+        return sex.toString() + year;
+    }
+}
+
+@EqualsAndHashCode
+@ExtensionMethod(StringExtensions.class)
+public class Year {
+    private final int value;
+
+    public Year(int value) {
+        this.value = value;
+    }
+
+    public static Either<ParsingError, Year> parseYear(String input) {
+        return input.toInt()
+                .map(Year::new)
+                .toEither(new ParsingError("year should be between 0 and 99"));
+    }
+
+    public static Year fromInt(Integer x) {
+        return parseYear(x.toString())
+                .getOrElseThrow(() -> new IllegalArgumentException("Year"));
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%02d", value);
+    }
+}
+```
+
+We can check `Properties` generation by printing the generated nirs:
+```text
+214
+241
+240
+182
+138
+294
+280
+252
+158
+265
+213
+225
+275
+```
+
+
 
 ## 3) Bulletproof your code with "Mutation-based Property-Driven Development"
 Once implemented, you can challenge your system by introducing some mutants in your code.
