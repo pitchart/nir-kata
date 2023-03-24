@@ -515,8 +515,30 @@ class NIRMutatedProperties {
 }
 ```
 
-### Write a Truncate mutator
-> What is your discovery?
+### Write a Truncate mutator 🫵
+> What didi you learn from it?
+
+### Write other mutators 🫵
+```text
+✅ Sex Mutator
+✅ Truncate the NIR
+Year Mutator
+Month Mutator
+Department Mutator
+City Mutator
+Serial Number Mutator
+Key Mutator
+```
+
+### Advantages of it
+![Parsing](solution/docs/img/nir-parse.png)
+
+By using this approach you can mix `T.D.D` with `Type Driven Development`, `Property-Based Testing` and `Mutations` to design extremely robust code.
+Indeed, it can help you quickly identify edge cases in your system.
+
+## 4) Reflect
+> What did you learn today?
+> How could you apply this learning?
 
 ![Mutation-based Property-Driven Development](img/mutation-based-property-driven-development.png)
 
