@@ -5,8 +5,6 @@ namespace Nir_Kata.Parse.Dont.Validate
 {
     public readonly struct NIR
     {
-        private const int ValidLength = 15;
-
         private readonly Sex _sex;
         private readonly Year _year;
         private readonly Month _month;
@@ -25,15 +23,6 @@ namespace Nir_Kata.Parse.Dont.Validate
         }
 
         public static Option<NIR> ParseNIR(string input) =>
-            input.Length() == ValidLength
-                ? ParseSafely(input)
-                : Option<NIR>.None;
-
-        private static bool ValidateKey(NIR nir, int key) => nir.Key() == key;
-
-        public int Key() => (int) (97L - ToStringWithoutKey().ToLong().Value() % 97L);
-
-        private static Option<NIR> ParseSafely(string input) =>
             (from sex in SexParser.Parse(input[0])
                 from year in Year.Parse(input[1..3])
                 from month in MonthParser.Parse(input[3..5])
@@ -47,6 +36,10 @@ namespace Nir_Kata.Parse.Dont.Validate
                         ? parsedNIR.NIR
                         : Option<NIR>.None,
                 Option<NIR>.None);
+
+        private static bool ValidateKey(NIR nir, int key) => nir.Key() == key;
+
+        public int Key() => (int) (97L - ToStringWithoutKey().ToLong().Value() % 97L);
 
         public override string ToString() => ToStringWithoutKey() + Key().ToString("D2");
 
