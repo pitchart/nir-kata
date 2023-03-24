@@ -432,16 +432,91 @@ We can check `Properties` generation by printing the generated nirs:
 275
 ```
 
+### Fast Forward the design of other types
+Here are the iterations (You can see their details from the git history):
+![Fast forward for Type Driven](solution/docs/img/fast-forward-type-driven.png)
 
+For now:
+- It is impossible to represent a `NIR` in an invalid state
+- We have a semantic that expresses the concepts behind `NIR`
+
+```java
+  @Override
+  public String toString() {
+      return stringWithoutKey() + format("%02d", key());
+  }
+
+  // How the NIR is composed
+  private String stringWithoutKey() {
+      return sex.toString() + year + month + department + city + serialNumber;
+  }
+```
+
+> Is it enough designing our types like this?
 
 ## 3) Bulletproof your code with "Mutation-based Property-Driven Development"
-Once implemented, you can challenge your system by introducing some mutants in your code.
-We can create mutation on purpose thanks to our strong typing system (by introducing mutants in `valid NIRs`).
+Let's create a property that demonstrates that an invalid `NIR` can never be parsed.
+We will generate a valid one and then mutate its string representation to create an invalid one.
+For that we will create some mutators.
+
+```text
+for all (validNir)
+mutate(nir.toString) == left
+```
 
 Some example of mutations:
 - `Sex` mutant: a value greater than 2 for example
-- `Truncate` mutant: truncate some characters in the nir string
 - `Key` mutant: change the key by using a number between 1 and 97 that does not respect the key definition  
+
+> Which others mutators could you imagine? 🫵
+
+### Create a `Sex` mutator
+```java
+  private record Mutator(String name, Function1<NIR, Gen<String>> mutate){}
+
+  private static Mutator sexMutator = new Mutator("Sex mutator", nir ->
+          Gen.choose(3, 9)
+                  .map(invalidSex -> invalidSex + nir.toString().substring(1))
+  );
+```
+
+- Define the `property` and use the mutator
+```java
+
+class NIRMutatedProperties {
+    private static final Random random = new Random();
+
+    private record Mutator(String name, Function1<NIR, Gen<String>> func) {
+        public String mutate(NIR nir) {
+            return func.apply(nir).apply(random);
+        }
+    }
+
+    private static Mutator sexMutator = new Mutator("Sex mutator", nir ->
+            Gen.choose(3, 9)
+                    .map(invalidSex -> invalidSex + nir.toString().substring(1))
+    );
+
+    private static Arbitrary<Mutator> mutators = Gen.choose(
+            sexMutator).arbitrary();
+
+    @Test
+    void invalidNIRCanNeverBeParsed() {
+        Property.def("parseNIR(nir.ToString()) == nir")
+                .forAll(validNIR, mutators)
+                .suchThat(NIRMutatedProperties::canNotParseMutatedNIR)
+                .check()
+                .assertIsSatisfied();
+    }
+
+    private static boolean canNotParseMutatedNIR(NIR nir, Mutator mutator) {
+        return NIR.parseNIR(mutator.mutate(nir)).isLeft();
+    }
+}
+```
+
+### Write a Truncate mutator
+> What is your discovery?
 
 ![Mutation-based Property-Driven Development](img/mutation-based-property-driven-development.png)
 
