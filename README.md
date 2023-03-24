@@ -108,6 +108,11 @@ class ValidateNIR {
 
 > What was the impact of using T.D.D and covering "non passing" tests on the design and implementation?
 
+### Limit of `validate` approach
+![Limit of primitive types](solution/docs/img/nir-primitive.png)
+
+Know more about `Primitive Obsession` [here](https://xtrem-tdd.netlify.app/Flavours/no-primitive-types)
+
 ## 2) Fight Primitive Obsession
 - You must apply ["Parse Don't Validate"](https://xtrem-tdd.netlify.app/Flavours/parse-dont-validate) principle to fight ["Primitive Obsession"](https://xtrem-tdd.netlify.app/Flavours/no-primitive-types)
 - Your `parsing function` must respect the below property
@@ -124,12 +129,10 @@ property("roundtrip") = forAll(validNIR) { nir =>
   }
 ```
 
-With `parse don't validate` we want to make it impossible to represent an invalid `NIR` in our system:
+With `parse don't validate` we want to make it impossible to represent an invalid `NIR` in our system.
+Use "Property-Based Testing" with `scalacheck` to drive your implementation.
 
-- You can use `scala 3` [opaque types](https://docs.scala-lang.org/scala3/book/types-opaque-types.html)
-- Use "Property-Based Testing" with `scalacheck` to drive your implementation
-
-Your parser may look like this: `String -> Either[ParsingError, NIR]`
+Your parser may look like this: `String -> Either<ParsingError, NIR>`
 
 ## How to
 - Start with a `parser` that always returns `Right[NIR]`

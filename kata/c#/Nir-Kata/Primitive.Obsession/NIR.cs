@@ -10,8 +10,7 @@ namespace Nir_Kata.Primitive.Obsession
                                                      && ValidateMonth(input[3..5])
                                                      && ValidateDepartment(input[5..7])
                                                      && ValidateCity(input[7..10])
-                                                     && ValidateSerialNumber(input[10..13])
-                                                     && ValidateKey(input[..13], input[13..15]);
+                                                     && ValidateSerialNumber(input[10..13]);
 
         private static bool ValidateLength(string input) => input.Length == ValidLength;
 
@@ -32,17 +31,5 @@ namespace Nir_Kata.Primitive.Obsession
             potentialNumber
                 .ToInt()
                 .Match(number => predicate(number), false);
-
-        private static bool ValidateKey(string number, string key) =>
-            number
-                .ToLong()
-                .Match(n => IsValidKey(n, key), false);
-
-        private static bool IsValidKey(long number, string key) =>
-            key
-                .ToInt()
-                .Match(k => CalculateKey(number) == k, false);
-
-        private static long CalculateKey(long number) => 97 - (number % 97);
     }
 }
