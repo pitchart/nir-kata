@@ -1,5 +1,5 @@
 # Bulletproof your code with "Mutation-Based Property-Driven Development"
-This repository is a fork to be used during `Software Craft Luxembourg Meetup'.
+This repository is a fork to be used during `Software Craft Luxembourg Meetup`.
 
 ![NIR kata @SCL](img/bulletproof-your-code.png)
 
