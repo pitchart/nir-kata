@@ -9,6 +9,17 @@ Original concept has been presented by [Arnaud Bailly](https://www.linkedin.com/
 ## The kata
 > Write a system that can handle `NIR` (simplified rules explained below)
 
+In this hands-on session we will develop together a system that can handle NIR "French social security number" by using / experimenting the following practices:
+- `Test-Driven Development` to design a first version of our algorithm (with Example Based approach)
+- `Fight Primitive Obsession` with `Parse Don't Validate` and `Monads`
+- `Type-Driven Development` to "make impossible states unrepresentable"
+- `Property-Based Testing` to drive our development
+- `Mutation-Based Properties` to refine our code and identify edge cases
+
+At the end of this code kata you will have understood a different way of designing code that may / will inspire you for your day-to-day life.
+
+Code is available in `java` and `C#` (#sharingiscaring)
+
 ### NIR rules
 `NIR` stands for "Numéro de sécurité sociale en France" it is a unique id representing an individual composed by 15 characters.
 
