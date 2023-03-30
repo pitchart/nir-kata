@@ -566,6 +566,9 @@ Proposal of solutions are available in the `solution` directory:
 
 A step-by-step guide in `java` is available [here](solution/docs/step-by-step.md)
 
+## To go further
+I have created another kata to practice those ideas called `snafu` it is available [here](https://github.com/ythirion/snafu-kata).
+
 ## Resources
 - [NIR full specification](https://fr.wikipedia.org/wiki/Num%C3%A9ro_de_s%C3%A9curit%C3%A9_sociale_en_France)
 - [Online key calculator](http://nourtier.net/cle_NIR/cle_NIR.htm)
