@@ -6,6 +6,28 @@ This repository is a fork to be used during `Software Craft Luxembourg Meetup`.
 ### Disclaimer
 Original concept has been presented by [Arnaud Bailly](https://www.linkedin.com/in/arnaudbailly/) and documented [here](https://abailly.github.io/about.html).
 
+- [The kata](#the-kata)
+  - [NIR rules](#nir-rules) 
+  - [Examples](#examples)
+- [1) Validate a NIR (String)](#1-validate-a-nir-string)
+  - [Finalize the implementation 🫵](#finalize-the-implementation-)
+  - [Limit of validate approach](#limit-of-validate-approach)
+- [2) Fight Primitive Obsession](#2-fight-primitive-obsession)
+  - [How to](#how-to)
+  - [Create the Roundtrip property](#create-the-roundtrip-property)
+  - [Type-Driven Development](#type-driven-development)
+  - [Design the Year type](#design-the-year-type)
+  - [Fast Forward the design of other types](#fast-forward-the-design-of-other-types)
+- [3) Bulletproof your code with "Mutation-based Property-Driven Development"](#3-bulletproof-your-code-with-mutation-based-property-driven-development)
+  - [Create a Sex mutator](#create-a-sex-mutator)
+  - [Write a Truncate mutator 🫵](#write-a-truncate-mutator-)
+  - [Write other mutators 🫵](#write-other-mutators-)
+  - [Advantages of it](#advantages-of-it)
+- [4) Reflect](#4-reflect)
+- ["Solutions"](#solutions)
+- [To go further](#to-go-further)
+- [Resources](#resources)
+
 ## The kata
 > Write a system that can handle `NIR` (simplified rules explained below)
 
@@ -570,6 +592,7 @@ A step-by-step guide in `java` is available [here](solution/docs/step-by-step.md
 I have created another kata to practice those ideas called `snafu` it is available [here](https://github.com/ythirion/snafu-kata).
 
 ## Resources
+- [50 shades of TDD (video) by Arnaud Bailly](https://youtu.be/T4SvCLLxTDg)
 - [NIR full specification](https://fr.wikipedia.org/wiki/Num%C3%A9ro_de_s%C3%A9curit%C3%A9_sociale_en_France)
 - [Online key calculator](http://nourtier.net/cle_NIR/cle_NIR.htm)
 
