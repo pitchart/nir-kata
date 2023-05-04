@@ -11,7 +11,7 @@ import static parse.dont.validate.mutations.Mutators.mutators;
 class MutatedProperties {
     @Test
     void invalidNIRCanNeverBeParsed() {
-        Property.def("parseNIR(nir.ToString()) == nir")
+        Property.def("mutate(nir.toString) == left")
                 .forAll(validNIR, mutators)
                 .suchThat(MutatedProperties::canNotParseMutatedNIR)
                 .check()
