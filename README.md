@@ -102,6 +102,7 @@ Invalid NIRs
 ✅ 22311xx35012322 // incorrect department
 ✅ 223119635012322 // incorrect department 2
 ✅ 2231159zzz12322 // incorrect city
+✅ 2231159123zzz22 // incorrect serial number
 ✅ 2231159350123221 // too long
 -  223115935012321 // incorrect control key
 
