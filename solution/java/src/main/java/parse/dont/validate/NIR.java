@@ -32,7 +32,7 @@ public class NIR {
 
     public static Either<ParsingError, NIR> parseNIR(String input) {
         return input.length() != VALID_LENGTH
-                ? left(new ParsingError("Not a valid NIR: should have a length of " + input.length()))
+                ? left(new ParsingError("Not a valid NIR: should have a length of " + VALID_LENGTH))
                 : parseSafely(input);
     }
 
